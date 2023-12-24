@@ -16,7 +16,7 @@ const getTextData = () => {
     })
 }
 
-const scaleNum = 360
+const scaleNum = 380
 const getTransformData = (data)=>{ 
     // 数据的x,y,z坐标跟threejs的坐标系不一样，需要转换
     return {
@@ -24,6 +24,33 @@ const getTransformData = (data)=>{
         x:data[1] * scaleNum,
         y:data[2] * scaleNum,
         isValid:!!data[3]
+    }
+}
+
+const getHipRotation = (point1,point2)=>{
+    // 假设 hipLeft 和 hipRight 是 THREE.Vector3 对象，代表左右髋关节的坐标
+    let hipLeft = new THREE.Vector3(point1.x, point1.y, point1.z);
+    let hipRight = new THREE.Vector3(point2.x, point2.y, point2.z);
+
+    // 计算左右髋关节的向量（横向向量）
+    let hipDirection = new THREE.Vector3().subVectors(hipRight, hipLeft).normalize();
+
+    // 假设人体的上方向量指向Y轴
+    let upDirection = new THREE.Vector3(0, 1, 0);
+
+    // 计算前方向量，使用叉乘
+    // 在右手坐标系中，叉乘 hipDirection 和 upDirection 将会给我们朝向前方的向量
+    let forwardDirection = new THREE.Vector3().crossVectors(hipDirection, upDirection).normalize();
+
+    // 使用一个Object3D来帮助我们计算旋转值
+    let helperObject = new THREE.Object3D();
+    helperObject.lookAt(forwardDirection); // 对齐到前方向量
+    let rotation = helperObject.rotation; // 获取旋转值（欧拉角）
+    return {
+        x:rotation.x,
+        y:rotation.y,
+        z:rotation.z,
+        isValid: point1.isValid && point2.isValid
     }
 }
 
@@ -40,7 +67,10 @@ const cleanData = (data) => {
     const left_foot_data = person_one[13]
 
     return {
-        hip:getTransformData(hip_data),
+        hip:{
+            ...getTransformData(hip_data),
+            rotation:getHipRotation(getTransformData(person_one[8]),getTransformData(person_one[11]))
+        },
         right_hand:getTransformData(right_hand_data),
         left_hand:getTransformData(left_hand_data),
         right_foot:getTransformData(right_foot_data),
@@ -53,11 +83,16 @@ const playData = (ik_list,row)=>{
     // console.log("curData",row.person_key_point[0])
     const res = cleanData(row)
     const {hip,right_hand,left_hand,right_foot,left_foot} = res
-    console.log('hip',hip)
+    // console.log('hip',hip)
     if(hip.isValid){
         ik_list[0].position.x = hip.x
         ik_list[0].position.y = hip.y
         ik_list[0].position.z = hip.z
+        console.log("转向",hip.rotation.y)
+        if(hip.rotation.isValid){
+            $model.major_bone_list["J_Bip_C_Hips"].rotation.y = hip.rotation.y
+        }
+       
     }
     if(right_hand.isValid){
         ik_list[1].position.x = right_hand.x
@@ -106,6 +141,6 @@ function startPoseAnimate(){
             if(curIndex >= poseData.length){
                 curIndex = 0
             }
-        },15)
+        },30)
     }
 }

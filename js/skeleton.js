@@ -209,8 +209,9 @@ function create_skeleton_helper(model){
         const material = new THREE.MeshBasicMaterial( { 
             color: new THREE.Color( 0, 1, 0 ), 
             depthTest: false, 
-            depthWrite: false, 
+            depthWrite: false,
             transparent: true } );
+        material.opacity = 0
 
         let major_bone = major_skeleton_list[key[i]];
 
@@ -243,6 +244,7 @@ function create_skeleton_helper(model){
     }
     model.major_bone_helper_list = major_bone_helper_list;
     model.major_bone_list = major_bone_list;
+    window.$model = model
 }
 
 

@@ -19,7 +19,7 @@ var getTextData = function getTextData(dataIndex) {
   return new Promise(function (resolve, reject) {
     var data = DATA_LIST[dataIndex];
     scaleNum = data.scaleNum;
-    fetch("/js/readPoseData/".concat(data.fileName, ".txt")).then(function (res) {
+    fetch("./js/readPoseData/".concat(data.fileName, ".txt")).then(function (res) {
       return res.text();
     }).then(function (data) {
       var list = data.split(/\r\n|\n/);

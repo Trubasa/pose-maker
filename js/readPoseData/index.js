@@ -13,7 +13,7 @@ const getTextData = (dataIndex) => {
         const data = DATA_LIST[dataIndex]
         scaleNum = data.scaleNum
 
-        fetch(`/js/readPoseData/${data.fileName}.txt`).then(res => {
+        fetch(`./js/readPoseData/${data.fileName}.txt`).then(res => {
             return res.text()
         }).then(data => {
 
